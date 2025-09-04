@@ -81,6 +81,7 @@ body {
     font-size: 3rem;
     margin-bottom: 10px;
     background: linear-gradient(45deg, #1db954, #1ed760);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 20px rgba(29, 185, 84, 0.2);
