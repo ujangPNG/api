@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G83L7SY0VQ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-G83L7SY0VQ');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+    <title>Spotify Stats - Pengolah Data API</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7230234598568746"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7230234598568746"
+     crossorigin="anonymous"></script>
+        <!-- yes -->
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-7230234598568746"
+            data-ad-slot="7364876666"
+            data-ad-format="auto"
+            data-full-width-responsive="true"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+    <div class="container">
+        <div id="authSection" class="auth-section">
+            <h2>🔐 Setup API Credentials</h2>
+            <p style="margin-bottom: 20px; opacity: 0.9; font-size: 30px;">
+                Untuk menggunakan app ini, kamu perlu:
+                <br>1. Buat app di <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: #1ed760;">Spotify Dashboard</a>
+                <br>2. Set Redirect URI ke: <strong>https://tes.zebua.site/spotify/</strong>
+                <br>3. Copy Client ID ke form di bawah
+                <!-- <br>4. <a href="tutorial.html" style="color: #1ed760;">Baca Tutorial</a>, ada gambarnya ini kalo g ngerti -->
+                <br>4. Atau kalo mau gampang, kasih tau gw email lu aja 😹 (memang dari api spotify nya begitu)(api geratis wak 😹)
+            </p>
+            
+            <div class="input-group">
+                <label for="clientId">Spotify Client ID:</label>
+                <input type="text" id="clientId" value="8c2ebcccb32b4e9e80234df130e2c96d" placeholder="Masukkan Client ID dari Spotify App">
+            </div>
+            
+            <div class="input-group">
+                <label for="redirectUri">Redirect URI:</label>
+                <input type="text" id="redirectUri" value="https://tes.zebua.site/spotify/" placeholder="URI redirect yang terdaftar">
+            </div>
+            
+            <button class="btn" onclick="startAuth()">🚀 Login ke Spotify</button>
+        </div>
+
+        <div id="statsSection" class="stats-section" style="display: none;">
+            <h2>📊 Statistik Spotify Kamu</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTracks">0</div>
+                    <div class="stat-label">Total Top Tracks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalArtists">0</div>
+                    <div class="stat-label">Total Top Artists</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="dataFetched">0</div>
+                    <div class="stat-label">Data Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgPopularity">0</div>
+                    <div class="stat-label">Average Tracks Popularity</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgArtistPopularity">0</div>
+                    <div class="stat-label">Average Artist Popularity</div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>⚙️ Pengaturan Fetch Data</h3>
+                <div class="time-range-options">
+                    <label class="time-range-option">
+                        <input type="radio" name="timeRange" value="short_term" checked>
+                        <span class="time-label">
+                            <span class="time-title">Short Term</span>
+                            <span class="time-desc">4 minggu terakhir</span>
+                        </span>
+                    </label>
+                    <label class="time-range-option">
+                        <input type="radio" name="timeRange" value="medium_term">
+                        <span class="time-label">
+                            <span class="time-title">Medium Term</span>
+                            <span class="time-desc">6 bulan terakhir</span>
+                        </span>
+                    </label>
+                    <label class="time-range-option">
+                        <input type="radio" name="timeRange" value="long_term">
+                        <span class="time-label">
+                            <span class="time-title">Long Term</span>
+                            <span class="time-desc">beberapa tahun</span>
+                        </span>
+                    </label>
+                </div>
+                <div class="button-group">
+                    <button class="btn" onclick="fetchAllData()">🔥 Ambil Semua Data</button>
+                    <button class="btn" style="background-color: red;" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+
+            <div id="loadingSection" style="display: none;">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Mengambil data dari Spotify... <span id="fetchProgress">0</span> requests</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultsContainer" class="results-container" style="display: none;">
+                <div id="tracksSection" class="track-list">
+                    <div class="section-header">
+                        <h3>🎵 Top Tracks</h3>
+                        <div class="item-count" id="tracksCount">0 tracks</div>
+                    </div>
+                    <div class="scrollable-content" id="tracksList"></div>
+                </div>
+
+                <div id="artistsSection" class="artist-list">
+                    <div class="section-header">
+                        <h3>🎤 Top Artists</h3>
+                        <div class="item-count" id="artistsCount">0 artists</div>
+                    </div>
+                    <div class="scrollable-content" id="artistsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7230234598568746"
+     crossorigin="anonymous"></script>
+        <!-- yes -->
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-7230234598568746"
+            data-ad-slot="7364876666"
+            data-ad-format="auto"
+            data-full-width-responsive="true"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</body>
+</html>
