@@ -1,6 +1,74 @@
 let accessToken = null;
 let allTracks = [];
 let allArtists = [];
+let currentLanguage = 'id';
+
+function toggleLanguage() {
+    currentLanguage = currentLanguage === 'id' ? 'en' : 'id';
+    document.getElementById('langToggle').textContent = currentLanguage === 'id' ? '🌐 EN' : '🌐 ID';
+    updatePageContent();
+}
+
+function updatePageContent() {
+    // Update all text content based on current language
+    document.querySelector('#authSection h2').textContent = translations[currentLanguage].setupTitle;
+    document.querySelector('#authSection p').innerHTML = `
+        ${translations[currentLanguage].setupInstructions}
+        <br>${translations[currentLanguage].createApp} <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: #1ed760;">Spotify Dashboard</a>
+        <br>${translations[currentLanguage].setRedirect} <strong>https://tes.zebua.site/spotify/</strong>
+        <br>${translations[currentLanguage].copyClientId}
+        <br>${translations[currentLanguage].emailOption}
+    `;
+    
+    document.querySelector('label[for="clientId"]').textContent = translations[currentLanguage].clientIdLabel;
+    document.querySelector('label[for="redirectUri"]').textContent = translations[currentLanguage].redirectUriLabel;
+    document.querySelector('#authSection button').textContent = translations[currentLanguage].loginButton;
+    
+    // Stats section
+    document.querySelector('#statsSection h2').textContent = translations[currentLanguage].statsTitle;
+    document.querySelectorAll('.stat-label').forEach((label, index) => {
+        const labels = [
+            translations[currentLanguage].totalTracks,
+            translations[currentLanguage].totalArtists,
+            translations[currentLanguage].dataRequests,
+            translations[currentLanguage].avgTracksPopularity,
+            translations[currentLanguage].avgArtistPopularity
+        ];
+        label.textContent = labels[index];
+    });
+    
+    // Settings section
+    document.querySelector('.settings-section h3').textContent = translations[currentLanguage].settingsTitle;
+    document.querySelectorAll('.time-desc').forEach((desc, index) => {
+        const timeRanges = [
+            translations[currentLanguage].shortTerm,
+            translations[currentLanguage].mediumTerm,
+            translations[currentLanguage].longTerm
+        ];
+        desc.textContent = timeRanges[index];
+    });
+    
+    // Buttons
+    document.querySelector('.button-group button:first-child').textContent = translations[currentLanguage].fetchDataButton;
+    document.querySelector('.button-group button:last-child').textContent = translations[currentLanguage].logoutButton;
+    
+    // Loading section
+    const loadingText = document.querySelector('#loadingSection p');
+    if (loadingText) {
+        const requests = loadingText.querySelector('#fetchProgress').textContent;
+        loadingText.innerHTML = `${translations[currentLanguage].loading} <span id="fetchProgress">${requests}</span> ${translations[currentLanguage].requests}`;
+    }
+    
+    // Results section
+    document.querySelector('#tracksSection h3').textContent = translations[currentLanguage].topTracks;
+    document.querySelector('#artistsSection h3').textContent = translations[currentLanguage].topArtists;
+    
+    // Update counts
+    const tracksCount = document.querySelector('#tracksCount').textContent.split(' ')[0];
+    const artistsCount = document.querySelector('#artistsCount').textContent.split(' ')[0];
+    document.querySelector('#tracksCount').textContent = `${tracksCount} ${translations[currentLanguage].tracksCount}`;
+    document.querySelector('#artistsCount').textContent = `${artistsCount} ${translations[currentLanguage].artistsCount}`;
+}
 
 // PKCE helper functions
 function generateRandomString(length) {

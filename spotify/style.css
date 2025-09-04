@@ -4,12 +4,34 @@
     box-sizing: border-box;
 }
 body {
+    color: white;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #0f0f23, #16213e, #0f3460);
     background-size: 200% 200%;
-    animation: gradientShift 12s ease infinite;
     min-height: 100vh;
+    animation: gradientShift 12s ease infinite;
+}
+
+.language-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.language-switcher button {
+    background-color: rgba(29, 185, 84, 0.8);
     color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.language-switcher button:hover {
+    background-color: rgba(29, 185, 84, 1);
 }
 @keyframes gradientShift {
     0% { background-position: 0% 50%; }

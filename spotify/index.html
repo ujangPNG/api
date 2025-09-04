@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <script src="translations.js"></script>
     <script src="script.js"></script>
     <title>Spotify Stats - Pengolah Data API</title>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7230234598568746"
@@ -30,6 +31,9 @@
         <script>
             (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
+    <div class="language-switcher">
+        <button onclick="toggleLanguage()" id="langToggle">🌐 EN</button>
+    </div>
     <div class="container">
         <div id="authSection" class="auth-section">
             <h2>🔐 Setup API Credentials</h2>
@@ -139,6 +143,9 @@
                     <div class="scrollable-content" id="artistsList"></div>
                 </div>
             </div>
+        </div>
+        <div class="footer">
+            Disclaimer: This webapp WILL NEVER ask, or store you secrets, or your spotify data. All processing is done in you browser.
         </div>
     </div>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7230234598568746"
