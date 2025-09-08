@@ -10,9 +10,10 @@ Preferred communication style: Simple, everyday language.
 
 ## Frontend Architecture
 - **Static Web Application**: Pure HTML/CSS/JavaScript frontend with no build process required
-- **Single Page Application**: Main interface in `spotify/index.html` with dynamic content updates
+- **Single Page Application**: Main interface in `public/index.html` with dynamic content updates
 - **Multi-language Support**: Client-side internationalization using `translations.js` for Indonesian and English
 - **Responsive Design**: Mobile-first CSS design with gradient animations and modern UI components
+- **Vercel Structure**: Files organized in `/public` for static assets and `/api` for serverless functions
 
 ## Authentication & API Integration
 - **Spotify OAuth Flow**: Implements authorization code flow requiring users to set up their own Spotify Developer app
