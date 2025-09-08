@@ -7,7 +7,7 @@ let userProfile = null;
 let currentLeaderboardData = null;
 
 // API Base URL - Update this to your Vercel deployment URL
-const API_BASE_URL = 'https://spotify-i5vh4ahtu-ujangpngs-projects.vercel.app/api';
+const API_BASE_URL = 'https://spotify-32oi4euul-ujangpngs-projects.vercel.app/api';
 
 function toggleLanguage() {
     currentLanguage = currentLanguage === 'id' ? 'en' : 'id';
