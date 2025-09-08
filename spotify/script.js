@@ -10,7 +10,7 @@ let currentLeaderboardData = null;
 const isLocal =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
-const API_BASE_URL = "https://api-9n778prwu-ujangpngs-projects.vercel.app/spotify/api";
+const API_BASE_URL = "https://api-bjhk29v7s-ujangpngs-projects.vercel.app/spotify/api";
 console.log(
     `🔧 Environment: ${isLocal ? "LOCAL" : "PRODUCTION"}, API URL: ${API_BASE_URL}`,
 );
