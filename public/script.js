@@ -414,7 +414,10 @@ async function fetchAllData() {
             updateDisplay(true); // Force final render
             document.getElementById("loadingSection").style.display = "none";
 
-            // Show leaderboard prompt
+            // Auto save data first with hidden status
+            await autoSaveToLeaderboard();
+            
+            // Then show leaderboard prompt for visibility option
             showLeaderboardPrompt();
         } else {
             throw new Error(
@@ -495,23 +498,70 @@ function displayResults() {
 }
 
 // Leaderboard Functions
+async function autoSaveToLeaderboard() {
+    try {
+        if (!userProfile || !allTracks.length || !allArtists.length) {
+            console.error("Missing data for auto save");
+            return;
+        }
+
+        const avgTrackPopularity = Math.round(
+            allTracks.reduce((sum, track) => sum + track.popularity, 0) /
+                allTracks.length,
+        );
+
+        const avgArtistPopularity = Math.round(
+            allArtists.reduce((sum, artist) => sum + artist.popularity, 0) /
+                allArtists.length,
+        );
+
+        const userData = {
+            user_id: userProfile.id,
+            display_name: userProfile.display_name || "Anonymous User",
+            time_range: currentTimeRange,
+            total_tracks: allTracks.length,
+            total_artists: allArtists.length,
+            avg_track_popularity: avgTrackPopularity,
+            avg_artist_popularity: avgArtistPopularity,
+            show_in_leaderboard: false, // Auto save as hidden by default
+        };
+
+        // Submit to leaderboard API
+        const response = await apiCall("/leaderboard", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userData }),
+        });
+
+        if (response.ok) {
+            console.log("✅ Data auto-saved to leaderboard (hidden)");
+        } else {
+            console.error("❌ Failed to auto-save data");
+        }
+    } catch (error) {
+        console.error("❌ Error auto-saving to leaderboard:", error);
+    }
+}
+
 function showLeaderboardPrompt() {
     const urlParams = new URLSearchParams(window.location.search);
     const forceShow = urlParams.get("show") === "true";
 
     if (forceShow) {
-        // Auto submit and show leaderboard
-        submitToLeaderboard(true);
+        // Auto update visibility and show leaderboard
+        updateLeaderboardVisibility(true);
         return;
     }
 
     document.getElementById("leaderboardPrompt").style.display = "block";
 }
 
-async function submitToLeaderboard(showInLeaderboard) {
+async function updateLeaderboardVisibility(showInLeaderboard) {
     try {
         if (!userProfile || !allTracks.length || !allArtists.length) {
-            console.error("Missing data for leaderboard submission");
+            console.error("Missing data for visibility update");
             return;
         }
 
@@ -536,14 +586,7 @@ async function submitToLeaderboard(showInLeaderboard) {
             show_in_leaderboard: showInLeaderboard,
         };
 
-        // Check if force show via URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const forceShow = urlParams.get("show") === "true";
-        if (forceShow) {
-            userData.show_in_leaderboard = true;
-        }
-
-        // Submit to leaderboard API
+        // Submit updated visibility to leaderboard API
         const response = await apiCall("/leaderboard", {
             method: "POST",
             headers: {
@@ -553,20 +596,24 @@ async function submitToLeaderboard(showInLeaderboard) {
         });
 
         if (response.ok) {
-            console.log("✅ Data berhasil disubmit ke leaderboard");
+            console.log(`✅ Visibility updated: ${showInLeaderboard ? 'Shown' : 'Hidden'} in leaderboard`);
             document.getElementById("leaderboardPrompt").style.display = "none";
 
-            if (showInLeaderboard || forceShow) {
-                document.getElementById("leaderboardSection").style.display =
-                    "block";
+            if (showInLeaderboard) {
+                document.getElementById("leaderboardSection").style.display = "block";
                 await loadLeaderboard();
             }
         } else {
-            console.error("❌ Gagal submit ke leaderboard");
+            console.error("❌ Failed to update visibility");
         }
     } catch (error) {
-        console.error("❌ Error submitting to leaderboard:", error);
+        console.error("❌ Error updating visibility:", error);
     }
+}
+
+// Keep the old function for backward compatibility, but now it just calls the new function
+async function submitToLeaderboard(showInLeaderboard) {
+    await updateLeaderboardVisibility(showInLeaderboard);
 }
 
 async function loadLeaderboard() {
