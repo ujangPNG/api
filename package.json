@@ -1,0 +1,25 @@
+{
+  "name": "spotify-stats-leaderboard",
+  "version": "1.0.0",
+  "description": "Spotify Stats with Global Leaderboard",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site, no build needed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "spotify",
+    "api",
+    "leaderboard",
+    "music"
+  ],
+  "author": "UjangPNG",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2"
+  }
+}
