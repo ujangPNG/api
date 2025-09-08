@@ -145,6 +145,38 @@
                     <div class="scrollable-content" id="artistsList"></div>
                 </div>
             </div>
+
+            <div id="leaderboardPrompt" class="leaderboard-prompt" style="display: none;">
+                <div class="prompt-card">
+                    <h3>🏆 Leaderboard</h3>
+                    <p>Mau data kamu ditampilin di leaderboard global? 🌟</p>
+                    <div class="prompt-buttons">
+                        <button class="btn btn-primary" onclick="submitToLeaderboard(true)">✅ Ya, tampilin!</button>
+                        <button class="btn btn-secondary" onclick="submitToLeaderboard(false)">❌ Jangan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="leaderboardSection" class="leaderboard-section" style="display: none;">
+                <div class="leaderboard-tabs">
+                    <button class="tab-btn active" onclick="switchLeaderboardTab('short_term')">Short Term</button>
+                    <button class="tab-btn" onclick="switchLeaderboardTab('medium_term')">Medium Term</button>
+                    <button class="tab-btn" onclick="switchLeaderboardTab('long_term')">Long Term</button>
+                </div>
+                
+                <div class="leaderboard-content">
+                    <div class="section-header">
+                        <h3>🏆 Global Leaderboard</h3>
+                        <button class="btn btn-small" onclick="loadLeaderboard()">🔄 Refresh</button>
+                    </div>
+                    <div class="scrollable-content" id="leaderboardList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading leaderboard...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="footer">
             Disclaimer: This webapp WILL NEVER ask, or store you secrets, or your spotify data. All processing is done in you browser.

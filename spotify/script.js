@@ -2,6 +2,12 @@ let accessToken = null;
 let allTracks = [];
 let allArtists = [];
 let currentLanguage = 'id';
+let currentTimeRange = 'short_term';
+let userProfile = null;
+let currentLeaderboardData = null;
+
+// API Base URL - Update this to your Vercel deployment URL
+const API_BASE_URL = 'https://your-vercel-app.vercel.app/api';
 
 function toggleLanguage() {
     currentLanguage = currentLanguage === 'id' ? 'en' : 'id';
@@ -15,7 +21,7 @@ function updatePageContent() {
     document.querySelector('#authSection p').innerHTML = `
         ${translations[currentLanguage].setupInstructions}
         <br>${translations[currentLanguage].createApp} <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: #1ed760;">Spotify Dashboard</a>
-        <br>${translations[currentLanguage].setRedirect} <strong>https://tes.zebua.site/spotify/</strong>
+        <br>${translations[currentLanguage].setRedirect} <strong>https://spotify.zebua.site/spotify/</strong>
         <br>${translations[currentLanguage].copyClientId}
         <br>${translations[currentLanguage].emailOption}
     `;
@@ -60,14 +66,35 @@ function updatePageContent() {
     }
     
     // Results section
-    document.querySelector('#tracksSection h3').textContent = translations[currentLanguage].topTracks;
-    document.querySelector('#artistsSection h3').textContent = translations[currentLanguage].topArtists;
+    const tracksTitle = document.querySelector('#tracksSection h3');
+    const artistsTitle = document.querySelector('#artistsSection h3');
+    if (tracksTitle) tracksTitle.textContent = translations[currentLanguage].topTracks;
+    if (artistsTitle) artistsTitle.textContent = translations[currentLanguage].topArtists;
     
     // Update counts
-    const tracksCount = document.querySelector('#tracksCount').textContent.split(' ')[0];
-    const artistsCount = document.querySelector('#artistsCount').textContent.split(' ')[0];
-    document.querySelector('#tracksCount').textContent = `${tracksCount} ${translations[currentLanguage].tracksCount}`;
-    document.querySelector('#artistsCount').textContent = `${artistsCount} ${translations[currentLanguage].artistsCount}`;
+    const tracksCount = document.querySelector('#tracksCount');
+    const artistsCount = document.querySelector('#artistsCount');
+    if (tracksCount) {
+        const count = tracksCount.textContent.split(' ')[0];
+        tracksCount.textContent = `${count} ${translations[currentLanguage].tracksCount}`;
+    }
+    if (artistsCount) {
+        const count = artistsCount.textContent.split(' ')[0];
+        artistsCount.textContent = `${count} ${translations[currentLanguage].artistsCount}`;
+    }
+    
+    // Update leaderboard content if visible
+    const leaderboardPromptCard = document.querySelector('.prompt-card');
+    if (leaderboardPromptCard) {
+        const promptText = leaderboardPromptCard.querySelector('p');
+        if (promptText) promptText.textContent = translations[currentLanguage].leaderboardDesc;
+        
+        const buttons = leaderboardPromptCard.querySelectorAll('.prompt-buttons .btn');
+        if (buttons.length >= 2) {
+            buttons[0].textContent = translations[currentLanguage].showButton;
+            buttons[1].textContent = translations[currentLanguage].hideButton;
+        }
+    }
 }
 
 // PKCE helper functions
@@ -89,6 +116,7 @@ function base64encode(input) {
         .replace(/\+/g, '-')
         .replace(/\//g, '_');
 }
+
 function startAuth() {
     const clientId = document.getElementById('clientId').value.trim();
     const redirectUri = document.getElementById('redirectUri').value.trim();
@@ -125,6 +153,7 @@ function startAuth() {
         window.location.href = authUrl.toString();
     });
 }
+
 async function getAccessToken(code) {
     const clientId = localStorage.getItem('spotify_client_id');
     const redirectUri = localStorage.getItem('spotify_redirect_uri');
@@ -148,42 +177,84 @@ async function getAccessToken(code) {
     if (data.access_token) {
         accessToken = data.access_token;
         localStorage.setItem('access_token', accessToken);
+        
+        // Fetch user profile when we get the token
+        await fetchUserProfile();
+        
         showStats();
         return true;
     }
     return false;
 }
+
+async function fetchUserProfile() {
+    if (!accessToken) return null;
+    
+    try {
+        const response = await fetch('https://api.spotify.com/v1/me', {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        
+        if (response.ok) {
+            userProfile = await response.json();
+            console.log('✅ User profile loaded:', userProfile.display_name);
+            return userProfile;
+        } else if (response.status === 401) {
+            // Token expired, need to re-login
+            localStorage.removeItem('access_token');
+            accessToken = null;
+            userProfile = null;
+            showAuth();
+        }
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+    }
+    return null;
+}
+
 function showStats() {
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('statsSection').style.display = 'block';
 }
+
 function showAuth() {
     document.getElementById('authSection').style.display = 'block';
     document.getElementById('statsSection').style.display = 'none';
+    document.getElementById('leaderboardPrompt').style.display = 'none';
+    document.getElementById('leaderboardSection').style.display = 'none';
 }
+
 function logout() {
     localStorage.clear();
     accessToken = null;
+    userProfile = null;
     allTracks = [];
     allArtists = [];
+    currentLeaderboardData = null;
     showAuth();
 }
+
 async function fetchAllData() {
     if (!accessToken) return;
     
     const timeRange = document.querySelector('input[name="timeRange"]:checked').value;
+    currentTimeRange = timeRange;
     
     document.getElementById('loadingSection').style.display = 'block';
     document.getElementById('resultsContainer').style.display = 'grid';
+    document.getElementById('leaderboardPrompt').style.display = 'none';
     
     allTracks = [];
     allArtists = [];
     let requestCount = 0;
     let lastRenderCount = 0;
-    let avgPopularity=0;
-    let avgArtistPopularity=0;
     
     try {
+        // Ensure user profile is loaded
+        if (!userProfile) {
+            await fetchUserProfile();
+        }
+        
         console.log('🎵 Mengambil tracks dan artists secara parallel...');
         
         const limit = 50;
@@ -192,30 +263,25 @@ async function fetchAllData() {
         
         // Function to update counters only
         const updateCounters = () => {
-            async function totalPopularity() {
-                let totalPopularity = 0;
-                allTracks.forEach(track => {
-                    totalPopularity += track.popularity;
-                });
-                
-                const tracksList = document.getElementById('tracksList');
-                document.getElementById('avgPopularity').textContent = Math.round(totalPopularity / allTracks.length || 0);
+            let avgTrackPopularity = 0;
+            let avgArtistPopularity = 0;
+            
+            if (allTracks.length > 0) {
+                const totalTrackPopularity = allTracks.reduce((sum, track) => sum + track.popularity, 0);
+                avgTrackPopularity = Math.round(totalTrackPopularity / allTracks.length);
             }
-            async function totalArtistPopularity() {
-                let totalPopularity = 0;
-                allArtists.forEach(track => {
-                    totalPopularity += track.popularity;
-                });
-                
-                const tracksList = document.getElementById('tracksList');
-                document.getElementById('avgArtistPopularity').textContent = Math.round(totalPopularity / allArtists.length || 0);
-            } 
+            
+            if (allArtists.length > 0) {
+                const totalArtistPopularity = allArtists.reduce((sum, artist) => sum + artist.popularity, 0);
+                avgArtistPopularity = Math.round(totalArtistPopularity / allArtists.length);
+            }
+            
             document.getElementById('fetchProgress').textContent = requestCount;
             document.getElementById('totalTracks').textContent = allTracks.length;
             document.getElementById('totalArtists').textContent = allArtists.length;
             document.getElementById('dataFetched').textContent = requestCount;
-            totalPopularity();
-            totalArtistPopularity();
+            document.getElementById('avgPopularity').textContent = avgTrackPopularity;
+            document.getElementById('avgArtistPopularity').textContent = avgArtistPopularity;
         };
         
         // Function to update display with batching
@@ -236,6 +302,7 @@ async function fetchAllData() {
                 lastRenderCount = totalItems;
             }
         };
+
         // Function to fetch a batch of items
         async function fetchBatch(type, offset) {
             const response = await fetch(
@@ -246,7 +313,7 @@ async function fetchAllData() {
             if (!response.ok) {
                 if (response.status === 401) {
                     throw new Error('Token expired. Please login again.');
-                } if (response.status === 403){
+                } else if (response.status === 403) {
                     throw new Error(`status: ${response.status}, siniin email lu dulu lek`);
                 }
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -278,6 +345,7 @@ async function fetchAllData() {
             }
             return false;
         }
+
         // Function to fetch all items of a type
         async function fetchAllOfType(type) {
             let offset = 0;
@@ -289,6 +357,7 @@ async function fetchAllData() {
                 await new Promise(resolve => setTimeout(resolve, 30));
             }
         }
+
         // Fetch tracks and artists in parallel
         await Promise.all([
             fetchAllOfType('tracks'),
@@ -301,6 +370,9 @@ async function fetchAllData() {
         if (allTracks.length > 0 || allArtists.length > 0) {
             updateDisplay(true); // Force final render
             document.getElementById('loadingSection').style.display = 'none';
+            
+            // Show leaderboard prompt
+            showLeaderboardPrompt();
         } else {
             throw new Error('No data returned. Try different time range or login again.');
         }
@@ -320,10 +392,12 @@ async function fetchAllData() {
         }
     }
 }
+
 function displayResults() {
     // Update counters
     document.getElementById('tracksCount').textContent = `${allTracks.length} tracks`;
     document.getElementById('artistsCount').textContent = `${allArtists.length} artists`;
+    
     // Display tracks
     const tracksList = document.getElementById('tracksList');
     tracksList.innerHTML = allTracks.map((track, index) => `
@@ -362,8 +436,191 @@ function displayResults() {
         </div>
     `).join('');
 }
+
+// Leaderboard Functions
+function showLeaderboardPrompt() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const forceShow = urlParams.get('show') === 'true';
+    
+    if (forceShow) {
+        // Auto submit and show leaderboard
+        submitToLeaderboard(true);
+        return;
+    }
+    
+    document.getElementById('leaderboardPrompt').style.display = 'block';
+}
+
+async function submitToLeaderboard(showInLeaderboard) {
+    try {
+        if (!userProfile || !allTracks.length || !allArtists.length) {
+            console.error('Missing data for leaderboard submission');
+            return;
+        }
+
+        const avgTrackPopularity = Math.round(
+            allTracks.reduce((sum, track) => sum + track.popularity, 0) / allTracks.length
+        );
+        
+        const avgArtistPopularity = Math.round(
+            allArtists.reduce((sum, artist) => sum + artist.popularity, 0) / allArtists.length
+        );
+
+        const userData = {
+            user_id: userProfile.id,
+            display_name: userProfile.display_name || 'Anonymous User',
+            time_range: currentTimeRange,
+            total_tracks: allTracks.length,
+            total_artists: allArtists.length,
+            avg_track_popularity: avgTrackPopularity,
+            avg_artist_popularity: avgArtistPopularity,
+            show_in_leaderboard: showInLeaderboard
+        };
+
+        // Check if force show via URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceShow = urlParams.get('show') === 'true';
+        if (forceShow) {
+            userData.show_in_leaderboard = true;
+        }
+
+        // Submit to leaderboard API
+        const response = await fetch(`${API_BASE_URL}/leaderboard`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userData })
+        });
+
+        if (response.ok) {
+            console.log('✅ Data berhasil disubmit ke leaderboard');
+            document.getElementById('leaderboardPrompt').style.display = 'none';
+            
+            if (showInLeaderboard || forceShow) {
+                document.getElementById('leaderboardSection').style.display = 'block';
+                await loadLeaderboard();
+            }
+        } else {
+            console.error('❌ Gagal submit ke leaderboard');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error submitting to leaderboard:', error);
+    }
+}
+
+async function loadLeaderboard() {
+    try {
+        document.getElementById('leaderboardList').innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading leaderboard...</p>
+            </div>
+        `;
+
+        const response = await fetch(`${API_BASE_URL}/leaderboard`);
+        
+        if (!response.ok) {
+            throw new Error('Failed to load leaderboard');
+        }
+
+        const data = await response.json();
+        currentLeaderboardData = data;
+        
+        // Display current tab
+        const activeTab = document.querySelector('.tab-btn.active');
+        const timeRange = activeTab ? activeTab.textContent.toLowerCase().replace(' ', '_') : 'short_term';
+        displayLeaderboard(timeRange);
+        
+    } catch (error) {
+        console.error('❌ Error loading leaderboard:', error);
+        document.getElementById('leaderboardList').innerHTML = `
+            <div class="error">❌ Gagal memuat leaderboard. Coba refresh.</div>
+        `;
+    }
+}
+
+function switchLeaderboardTab(timeRange) {
+    // Update active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Display leaderboard for selected time range
+    displayLeaderboard(timeRange);
+}
+
+function displayLeaderboard(timeRange) {
+    if (!currentLeaderboardData || !currentLeaderboardData[timeRange]) {
+        document.getElementById('leaderboardList').innerHTML = `
+            <div class="error">❌ Data tidak tersedia untuk ${timeRange}</div>
+        `;
+        return;
+    }
+
+    const leaderboardData = currentLeaderboardData[timeRange]
+        .filter(entry => entry.show_in_leaderboard !== false);
+
+    if (leaderboardData.length === 0) {
+        document.getElementById('leaderboardList').innerHTML = `
+            <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                🏆 Belum ada data di leaderboard ini
+            </div>
+        `;
+        return;
+    }
+
+    const leaderboardHtml = leaderboardData.map((entry, index) => {
+        const rank = index + 1;
+        let rankClass = '';
+        let rankEmoji = `#${rank}`;
+        
+        if (rank === 1) {
+            rankClass = 'top1';
+            rankEmoji = '🥇';
+        } else if (rank === 2) {
+            rankClass = 'top2';
+            rankEmoji = '🥈';
+        } else if (rank === 3) {
+            rankClass = 'top3';
+            rankEmoji = '🥉';
+        }
+
+        const totalScore = (entry.total_tracks || 0) + (entry.total_artists || 0) + 
+                          (entry.avg_track_popularity || 0) + (entry.avg_artist_popularity || 0);
+
+        const updatedDate = entry.updated_at ? 
+            new Date(entry.updated_at).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }) : '';
+
+        return `
+            <div class="leaderboard-item">
+                <div class="leaderboard-rank ${rankClass}">${rankEmoji}</div>
+                <div class="leaderboard-user">
+                    <h4>${entry.display_name}</h4>
+                    <div class="leaderboard-stats">
+                        <div>🎵 ${entry.total_tracks || 0} tracks</div>
+                        <div>🎤 ${entry.total_artists || 0} artists</div>
+                        <div>⭐ ${entry.avg_track_popularity || 0}% tracks</div>
+                        <div>⭐ ${entry.avg_artist_popularity || 0}% artists</div>
+                    </div>
+                    ${updatedDate ? `<div class="leaderboard-date">Updated: ${updatedDate}</div>` : ''}
+                </div>
+                <div style="text-align: right; color: #1ed760; font-weight: bold;">
+                    Score: ${totalScore}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('leaderboardList').innerHTML = leaderboardHtml;
+}
+
 // Check for authorization code in URL
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     const error = urlParams.get('error');
@@ -374,15 +631,14 @@ window.addEventListener('load', () => {
     }
     
     if (code) {
-        getAccessToken(code).then(success => {
-            if (success) {
-                // Clean URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            } else {
-                alert('Failed to get access token');
-                showAuth();
-            }
-        });
+        const success = await getAccessToken(code);
+        if (success) {
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            alert('Failed to get access token');
+            showAuth();
+        }
         return;
     }
     
@@ -390,7 +646,14 @@ window.addEventListener('load', () => {
     const storedToken = localStorage.getItem('access_token');
     if (storedToken) {
         accessToken = storedToken;
-        showStats();
+        // Try to fetch user profile with stored token
+        await fetchUserProfile();
+        if (userProfile) {
+            showStats();
+        } else {
+            // Token invalid, show auth
+            showAuth();
+        }
     } else {
         showAuth();
     }
