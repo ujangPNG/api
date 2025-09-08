@@ -6,12 +6,9 @@ let currentTimeRange = "short_term";
 let userProfile = null;
 let currentLeaderboardData = null;
 
-// API Base URL - Production only
-const API_BASE_URL = "https://api-vercel.zebua.site/api/spotify";
-
-// Helper function for API calls
+// Helper function for API calls - now uses relative path for your domain
 async function apiCall(endpoint, options = {}) {
-    return fetch(`${API_BASE_URL}${endpoint}`, options);
+    return fetch(`/api${endpoint}`, options);
 }
 
 function toggleLanguage() {
@@ -28,7 +25,7 @@ function updatePageContent() {
     document.querySelector("#authSection p").innerHTML = `
         ${translations[currentLanguage].setupInstructions}
         <br>${translations[currentLanguage].createApp} <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: #1ed760;">Spotify Dashboard</a>
-        <br>${translations[currentLanguage].setRedirect} <strong>https://spotify.zebua.site/spotify/</strong>
+        <br>${translations[currentLanguage].setRedirect} <strong>${window.location.origin}/</strong>
         <br>${translations[currentLanguage].copyClientId}
         <br>${translations[currentLanguage].emailOption}
     `;
