@@ -6,8 +6,10 @@ let currentTimeRange = "short_term";
 let userProfile = null;
 let currentLeaderboardData = null;
 
-// API Base URL - Update this to your Vercel deployment URL
-const API_BASE_URL ="http://127.0.0.1:5500//api";
+// API Base URL - Auto-detect environment
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URL = isLocal ? '/api' : "https://api-livid-rho.vercel.app/api";
+console.log(`🔧 Environment: ${isLocal ? 'LOCAL' : 'PRODUCTION'}, API URL: ${API_BASE_URL}`);
 
 function toggleLanguage() {
     currentLanguage = currentLanguage === "id" ? "en" : "id";
