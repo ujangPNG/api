@@ -6,38 +6,12 @@ let currentTimeRange = "short_term";
 let userProfile = null;
 let currentLeaderboardData = null;
 
-// API Base URL - Auto-detect environment
-const isLocal =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1";
+// API Base URL - Production only
 const API_BASE_URL = "https://api-bjhk29v7s-ujangpngs-projects.vercel.app/spotify/api";
-console.log(
-    `🔧 Environment: ${isLocal ? "LOCAL" : "PRODUCTION"}, API URL: ${API_BASE_URL}`,
-);
 
-// Helper function for API calls (handles local mock vs production)
+// Helper function for API calls
 async function apiCall(endpoint, options = {}) {
-    if (isLocal) {
-        // Use mock API for local development
-        console.log(`🔧 Using Mock API: ${endpoint}`);
-        if (endpoint === "/leaderboard") {
-            const method = options.method || "GET";
-            const data = options.body ? JSON.parse(options.body) : null;
-            const mockResult = await window.mockAPI.handleLeaderboard(
-                method,
-                data,
-            );
-
-            return {
-                ok: mockResult.ok,
-                json: async () =>
-                    mockResult.data || { error: mockResult.error },
-            };
-        }
-    } else {
-        // Use real API for production
-        return fetch(`${API_BASE_URL}${endpoint}`, options);
-    }
+    return fetch(`${API_BASE_URL}${endpoint}`, options);
 }
 
 function toggleLanguage() {
