@@ -7,7 +7,7 @@ let userProfile = null;
 let currentLeaderboardData = null;
 
 // API Base URL - Production only
-const API_BASE_URL = "https://api-vercel.zebua.site/api";
+const API_BASE_URL = "https://api-vercel.zebua.site/api/spotify";
 
 // Helper function for API calls
 async function apiCall(endpoint, options = {}) {
