@@ -13,19 +13,19 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Spotify App"
+args = "Spotify Static Server"
 
 [[workflows.workflow]]
-name = "Spotify App"
+name = "Spotify Static Server"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd spotify && python cache_bust_server.py"
+args = "python -m http.server 5000 --directory public"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 5000

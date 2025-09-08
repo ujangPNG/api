@@ -4,7 +4,7 @@
   "description": "Spotify Stats with Global Leaderboard",
   "main": "public/index.html",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "python -m http.server 5000 --directory public",
     "build": "echo 'Static site, no build needed'",
     "deploy": "vercel --prod"
   },
