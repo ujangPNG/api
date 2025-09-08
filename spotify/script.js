@@ -7,23 +7,33 @@ let userProfile = null;
 let currentLeaderboardData = null;
 
 // API Base URL - Auto-detect environment
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE_URL = isLocal ? '/api' : "https://api-livid-rho.vercel.app/api";
-console.log(`🔧 Environment: ${isLocal ? 'LOCAL' : 'PRODUCTION'}, API URL: ${API_BASE_URL}`);
+const isLocal =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+const API_BASE_URL = isLocal
+    ? "/api"
+    : "https://spotify-c4kb5npvx-ujangpngs-projects.vercel.app/api";
+console.log(
+    `🔧 Environment: ${isLocal ? "LOCAL" : "PRODUCTION"}, API URL: ${API_BASE_URL}`,
+);
 
 // Helper function for API calls (handles local mock vs production)
 async function apiCall(endpoint, options = {}) {
     if (isLocal) {
         // Use mock API for local development
         console.log(`🔧 Using Mock API: ${endpoint}`);
-        if (endpoint === '/leaderboard') {
-            const method = options.method || 'GET';
+        if (endpoint === "/leaderboard") {
+            const method = options.method || "GET";
             const data = options.body ? JSON.parse(options.body) : null;
-            const mockResult = await window.mockAPI.handleLeaderboard(method, data);
-            
+            const mockResult = await window.mockAPI.handleLeaderboard(
+                method,
+                data,
+            );
+
             return {
                 ok: mockResult.ok,
-                json: async () => mockResult.data || { error: mockResult.error }
+                json: async () =>
+                    mockResult.data || { error: mockResult.error },
             };
         }
     } else {
@@ -565,7 +575,7 @@ async function submitToLeaderboard(showInLeaderboard) {
         }
 
         // Submit to leaderboard API
-        const response = await apiCall('/leaderboard', {
+        const response = await apiCall("/leaderboard", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -599,7 +609,7 @@ async function loadLeaderboard() {
             </div>
         `;
 
-        const response = await apiCall('/leaderboard');
+        const response = await apiCall("/leaderboard");
 
         if (!response.ok) {
             throw new Error("Failed to load leaderboard");
