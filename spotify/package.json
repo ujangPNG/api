@@ -2,7 +2,7 @@
   "name": "spotify-stats-leaderboard",
   "version": "1.0.0",
   "description": "Spotify Stats with Global Leaderboard",
-  "main": "index.js",
+  "main": "index.html",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'Static site, no build needed'",
