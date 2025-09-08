@@ -7,7 +7,7 @@ let userProfile = null;
 let currentLeaderboardData = null;
 
 // API Base URL - Production only
-const API_BASE_URL = "https://api-bjhk29v7s-ujangpngs-projects.vercel.app/spotify/api";
+const API_BASE_URL = "https://api-9n778prwu-ujangpngs-projects.vercel.app/spotify/api";
 
 // Helper function for API calls
 async function apiCall(endpoint, options = {}) {
