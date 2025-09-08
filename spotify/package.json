@@ -9,7 +9,7 @@
     "deploy": "vercel --prod"
   },
   "keywords": ["spotify", "api", "leaderboard", "music"],
-  "author": "Your Name",
+  "author": "UjangPNG",
   "license": "MIT",
   "devDependencies": {
     "vercel": "^32.0.0"
