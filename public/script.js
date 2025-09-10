@@ -627,9 +627,14 @@ async function loadLeaderboard() {
 
         // Display current tab
         const activeTab = document.querySelector(".tab-btn.active");
-        const timeRange = activeTab
-            ? activeTab.textContent.toLowerCase().replace(" ", "_")
-            : "short_term";
+        let timeRange = 'short_term'; // default
+        if (activeTab) {
+            const onclickAttr = activeTab.getAttribute('onclick');
+            const match = onclickAttr.match(/'(.*?)'/);
+            if (match && match[1]) {
+                timeRange = match[1];
+            }
+        }
         displayLeaderboard(timeRange);
     } catch (error) {
         console.error("❌ Error loading leaderboard:", error);
@@ -730,9 +735,14 @@ function displayLeaderboard(timeRange, forceShow = false) {
 
 function Show() {
     const activeTab = document.querySelector(".tab-btn.active");
-    const timeRange = activeTab
-        ? activeTab.textContent.toLowerCase().replace(" ", "_")
-        : "short_term";
+    let timeRange = 'short_term'; // default
+    if (activeTab) {
+        const onclickAttr = activeTab.getAttribute('onclick');
+        const match = onclickAttr.match(/'(.*?)'/);
+        if (match && match[1]) {
+            timeRange = match[1];
+        }
+    }
     displayLeaderboard(timeRange, true);
     console.log(`Showing all data for ${timeRange}`);
 }
