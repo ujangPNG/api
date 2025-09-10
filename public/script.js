@@ -546,15 +546,6 @@ async function autoSaveToLeaderboard() {
 }
 
 function showLeaderboardPrompt() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const forceShow = urlParams.get("show") === "true";
-
-    if (forceShow) {
-        // Auto update visibility and show leaderboard
-        updateLeaderboardVisibility(true);
-        return;
-    }
-
     document.getElementById("leaderboardPrompt").style.display = "block";
 }
 
@@ -659,7 +650,7 @@ function switchLeaderboardTab(timeRange) {
     displayLeaderboard(timeRange);
 }
 
-function displayLeaderboard(timeRange) {
+function displayLeaderboard(timeRange, forceShow = false) {
     if (!currentLeaderboardData || !currentLeaderboardData[timeRange]) {
         document.getElementById("leaderboardList").innerHTML = `
             <div class="error">❌ Data tidak tersedia untuk ${timeRange}</div>
@@ -667,9 +658,11 @@ function displayLeaderboard(timeRange) {
         return;
     }
 
-    const leaderboardData = currentLeaderboardData[timeRange].filter(
-        (entry) => entry.show_in_leaderboard !== false,
-    );
+    const leaderboardData = forceShow
+        ? currentLeaderboardData[timeRange]
+        : currentLeaderboardData[timeRange].filter(
+              (entry) => entry.show_in_leaderboard !== false,
+          );
 
     if (leaderboardData.length === 0) {
         document.getElementById("leaderboardList").innerHTML = `
@@ -735,6 +728,15 @@ function displayLeaderboard(timeRange) {
     document.getElementById("leaderboardList").innerHTML = leaderboardHtml;
 }
 
+function Show() {
+    const activeTab = document.querySelector(".tab-btn.active");
+    const timeRange = activeTab
+        ? activeTab.textContent.toLowerCase().replace(" ", "_")
+        : "short_term";
+    displayLeaderboard(timeRange, true);
+    console.log(`Showing all data for ${timeRange}`);
+}
+
 // Check for authorization code in URL
 window.addEventListener("load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -778,3 +780,5 @@ window.addEventListener("load", async () => {
         showAuth();
     }
 });
+
+window.Show = Show;
