@@ -12,10 +12,10 @@ export default async function handler(req, res) {
     return;
   }
 
-  const VISITOR_API_KEY = process.env.VISITOR;
-  const VISITOR_BIN_ID = process.env.VISITOR_BIN_ID;
+  const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY;
+  const VISITOR_BIN_ID = process.env.VISITOR;
   
-  if (!VISITOR_API_KEY || !VISITOR_BIN_ID) {
+  if (!JSONBIN_API_KEY || !VISITOR_BIN_ID) {
     return res.status(500).json({ error: 'Visitor tracking configuration error' });
   }
 
@@ -68,7 +68,7 @@ export default async function handler(req, res) {
       // Get existing data from JSONBin
       const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${VISITOR_BIN_ID}/latest`, {
         headers: {
-          'X-Master-Key': VISITOR_API_KEY,
+          'X-Master-Key': JSONBIN_API_KEY,
           'X-Bin-Meta': 'false'
         }
       });
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Master-Key': VISITOR_API_KEY
+          'X-Master-Key': JSONBIN_API_KEY
         },
         body: JSON.stringify(visitorDatabase)
       });
