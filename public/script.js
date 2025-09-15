@@ -575,6 +575,7 @@ async function updateLeaderboardVisibility(showInLeaderboard) {
             avg_track_popularity: avgTrackPopularity,
             avg_artist_popularity: avgArtistPopularity,
             show_in_leaderboard: showInLeaderboard,
+            profile_image:userProfile.images && userProfile.images.length > 0 ? userProfile.images[0].url : null
         };
 
         // Submit updated visibility to leaderboard API
