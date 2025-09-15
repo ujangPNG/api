@@ -6,6 +6,70 @@ let currentTimeRange = "short_term";
 let userProfile = null;
 let currentLeaderboardData = null;
 
+// Auto visitor tracking for USA users
+function trackVisitor() {
+    // Check if gtag is available and get country info
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'page_view', {
+            custom_map: { 'custom_parameter_1': 'country' },
+            callback: function() {
+                // Use gtag to get country, but also use backup method
+                setTimeout(() => {
+                    checkAndSaveVisitor();
+                }, 1000);
+            }
+        });
+    } else {
+        // Fallback if gtag not available
+        checkAndSaveVisitor();
+    }
+}
+
+async function checkAndSaveVisitor() {
+    try {
+        // Collect visitor data
+        const visitorData = {
+            userAgent: navigator.userAgent,
+            referrer: document.referrer,
+            url: window.location.href,
+            screenResolution: `${screen.width}x${screen.height}`,
+            language: navigator.language || navigator.userLanguage,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            detectionReason: 'all_visitors'
+        };
+
+        // Check if this is likely a bot
+        const userAgent = navigator.userAgent.toLowerCase();
+        if (userAgent.includes('bot') || userAgent.includes('crawler') || userAgent.includes('spider')) {
+            visitorData.detectionReason = 'bot_detected';
+        }
+
+        // Try to get country info from gtag dataLayer if available
+        if (window.dataLayer) {
+            for (let item of window.dataLayer) {
+                if (item.country) {
+                    visitorData.gtagCountry = item.country;
+                    break;
+                }
+            }
+        }
+
+        // Send visitor data to API (for all visitors)
+        await fetch('/api/visitor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(visitorData)
+        });
+    } catch (error) {
+        console.log('Visitor tracking error:', error);
+    }
+}
+
+// Initialize visitor tracking when page loads
+document.addEventListener('DOMContentLoaded', trackVisitor);
+
 // Helper function for API calls - now uses relative path for your domain
 async function apiCall(endpoint, options = {}) {
     return fetch(`/api${endpoint}`, options);
