@@ -23,17 +23,18 @@
             href="https://ssl.gstatic.com/analytics/analytics-frontend.indexpage_20250902.09_p0/index/static/analytics_standard_icon.png"
         />
         <script src="translations.js"></script>
-        <script src="script.js?v=2025-09-08-fix"></script>
+        <script src="script.js"></script>
         <title>Spotify Stats - Pengolah Data API</title>
         <script
             async
             src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7230234598568746"
             crossorigin="anonymous"
         ></script>
-        <script
+        <!-- <script
             type="text/javascript"
             src="//pl27598174.revenuecpmgate.com/76/43/d9/7643d9ee43308700ad6ec272ca4ffeba.js"
-        ></script>
+        ></script> -->
+        <!-- ini iklan -->
     </head>
     <body>
         <script
@@ -58,8 +59,8 @@
         </div>
         <div class="container">
             <div id="authSection" class="auth-section">
-                <h2>🔐 Setup API Credentials</h2>
-                <p style="margin-bottom: 20px; opacity: 0.9; font-size: 30px">
+                <h2 data-translate="setupTitle">🔐 Setup API Credentials</h2>
+                <p style="margin-bottom: 20px; opacity: 0.9; font-size: 30px" data-translate="setupInstructionsComplex">
                     Untuk menggunakan app ini, kamu perlu:
                     <br />1. <strong>Buat app</strong> di baru <a
                         href="https://developer.spotify.com/dashboard"
@@ -70,13 +71,13 @@
                     <br />2. Set Redirect URI ke:
                     <strong>https://spotify.zebua.site/</strong> <br />3. Copy
                     Client ID ke form di bawah
-                    <!-- <br>4. <a href="tutorial.html" style="color: #1ed760;">Baca Tutorial</a>, ada gambarnya ini kalo g ngerti -->
-                    <br />4. Atau kalo mau gampang, kasih tau gw email lu aja 😹
+                    <br />4. <a href="tutorial.html" style="color: #1ed760;">Baca Tutorial</a>, ada gambarnya ini kalo g ngerti
+                    <br />5. Atau kalo mau gampang, kasih tau gw email lu aja 😹
                     (memang dari api spotify nya begitu)(api geratis wak 😹)
                 </p>
 
                 <div class="input-group">
-                    <label for="clientId">Spotify Client ID:</label>
+                    <label for="clientId" data-translate="clientIdLabel">Spotify Client ID:</label>
                     <input
                         type="text"
                         id="clientId"
@@ -86,7 +87,7 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="redirectUri">Redirect URI:</label>
+                    <label for="redirectUri" data-translate="redirectUriLabel">Redirect URI:</label>
                     <input
                         type="text"
                         id="redirectUri"
@@ -95,41 +96,41 @@
                     />
                 </div>
 
-                <button class="btn" onclick="startAuth()">
+                <button class="btn" onclick="startAuth()" data-translate="loginButton">
                     🚀 Login ke Spotify
                 </button>
             </div>
 
             <div id="statsSection" class="stats-section" style="display: none">
-                <h2>📊 Statistik Spotify Kamu</h2>
+                <h2 data-translate="statsTitle">📊 Statistik Spotify Kamu</h2>
 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number" id="totalTracks">0</div>
-                        <div class="stat-label">Total Top Tracks</div>
+                        <div class="stat-label" data-translate="totalTracks">Total Top Tracks</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number" id="totalArtists">0</div>
-                        <div class="stat-label">Total Top Artists</div>
+                        <div class="stat-label" data-translate="totalArtists">Total Top Artists</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number" id="dataFetched">0</div>
-                        <div class="stat-label">Data Requests</div>
+                        <div class="stat-label" data-translate="dataRequests">Data Requests</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number" id="avgPopularity">0</div>
-                        <div class="stat-label">Average Tracks Popularity</div>
+                        <div class="stat-label" data-translate="avgTracksPopularity">Average Tracks Popularity</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number" id="avgArtistPopularity">
                             0
                         </div>
-                        <div class="stat-label">Average Artist Popularity</div>
+                        <div class="stat-label" data-translate="avgArtistPopularity">Average Artist Popularity</div>
                     </div>
                 </div>
 
                 <div class="settings-section">
-                    <h3>⚙️ Pengaturan Fetch Data</h3>
+                    <h3 data-translate="settingsTitle">⚙️ Pengaturan Fetch Data</h3>
                     <div class="time-range-options">
                         <label class="time-range-option">
                             <input
@@ -139,8 +140,8 @@
                                 checked
                             />
                             <span class="time-label">
-                                <span class="time-title">Short Term</span>
-                                <span class="time-desc">4 minggu terakhir</span>
+                                <span class="time-title" data-translate="shortTerm">Short Term</span>
+                                <span class="time-desc" data-translate="shortTermDesc">4 minggu terakhir</span>
                             </span>
                         </label>
                         <label class="time-range-option">
@@ -150,8 +151,8 @@
                                 value="medium_term"
                             />
                             <span class="time-label">
-                                <span class="time-title">Medium Term</span>
-                                <span class="time-desc">6 bulan terakhir</span>
+                                <span class="time-title" data-translate="mediumTerm">Medium Term</span>
+                                <span class="time-desc" data-translate="mediumTermDesc">6 bulan terakhir</span>
                             </span>
                         </label>
                         <label class="time-range-option">
@@ -161,19 +162,20 @@
                                 value="long_term"
                             />
                             <span class="time-label">
-                                <span class="time-title">Long Term</span>
-                                <span class="time-desc">beberapa tahun</span>
+                                <span class="time-title" data-translate="longTerm">Long Term</span>
+                                <span class="time-desc" data-translate="longTermDesc">beberapa tahun</span>
                             </span>
                         </label>
                     </div>
                     <div class="button-group">
-                        <button class="btn" onclick="fetchAllData()">
+                        <button class="btn" onclick="fetchAllData()" data-translate="fetchDataButton">
                             🔥 Ambil Semua Data
                         </button>
                         <button
                             class="btn"
                             style="background-color: red"
                             onclick="logout()"
+                            data-translate="logoutButton"
                         >
                             🚪 Logout
                         </button>
@@ -183,9 +185,9 @@
                 <div id="loadingSection" style="display: none">
                     <div class="loading">
                         <div class="spinner"></div>
-                        <p>
-                            Mengambil data dari Spotify...
-                            <span id="fetchProgress">0</span> requests
+                        <p >
+                            <span data-translate="loading">Mengambil data dari Spotify...</span>
+                            <span id="fetchProgress">0</span> <span data-translate="requests">requests</span>
                         </p>
                         <div class="progress-bar">
                             <div
@@ -204,9 +206,9 @@
                 >
                     <div id="tracksSection" class="track-list">
                         <div class="section-header">
-                            <h3>🎵 Top Tracks</h3>
+                            <h3 data-translate="topTracks">🎵 Top Tracks</h3>
                             <div class="item-count" id="tracksCount">
-                                0 tracks
+                                0 <span data-translate="tracksCount">tracks</span>
                             </div>
                         </div>
                         <div class="scrollable-content" id="tracksList"></div>
@@ -214,9 +216,9 @@
 
                     <div id="artistsSection" class="artist-list">
                         <div class="section-header">
-                            <h3>🎤 Top Artists</h3>
+                            <h3 data-translate="topArtists">🎤 Top Artists</h3>
                             <div class="item-count" id="artistsCount">
-                                0 artists
+                                0 <span data-translate="artistsCount">artists</span>
                             </div>
                         </div>
                         <div class="scrollable-content" id="artistsList"></div>
@@ -229,20 +231,22 @@
                     style="display: none"
                 >
                     <div class="prompt-card">
-                        <h3>🏆 Leaderboard</h3>
-                        <p>
+                        <h3 data-translate="leaderboardPromptTitle">🏆 Leaderboard</h3>
+                        <p data-translate="leaderboardPrompt">
                             Mau data kamu ditampilin di leaderboard global? 🌟
                         </p>
                         <div class="prompt-buttons">
                             <button
                                 class="btn btn-primary"
                                 onclick="submitToLeaderboard(true)"
+                                data-translate="leaderboardYes"
                             >
                                 ✅ Ya, tampilin!
                             </button>
                             <button
                                 class="btn btn-secondary"
                                 onclick="submitToLeaderboard(false)"
+                                data-translate="leaderboardNo"
                             >
                                 ❌ Jangan
                             </button>
@@ -259,18 +263,21 @@
                         <button
                             class="tab-btn active"
                             onclick="switchLeaderboardTab('short_term')"
+                            data-translate="shortTerm"
                         >
                             Short Term
                         </button>
                         <button
                             class="tab-btn"
                             onclick="switchLeaderboardTab('medium_term')"
+                            data-translate="mediumTerm"
                         >
                             Medium Term
                         </button>
                         <button
                             class="tab-btn"
                             onclick="switchLeaderboardTab('long_term')"
+                            data-translate="longTerm"
                         >
                             Long Term
                         </button>
@@ -278,10 +285,11 @@
 
                     <div class="leaderboard-content">
                         <div class="section-header">
-                            <h3>🏆 Global Leaderboard</h3>
+                            <h3 data-translate="globalLeaderboard">🏆 Global Leaderboard</h3>
                             <button
                                 class="btn btn-small"
                                 onclick="loadLeaderboard()"
+                                data-translate="refresh"
                             >
                                 🔄 Refresh
                             </button>
@@ -289,13 +297,13 @@
                         <div class="scrollable-content" id="leaderboardList">
                             <div class="loading">
                                 <div class="spinner"></div>
-                                <p>Loading leaderboard...</p>
+                                <p data-translate="loadingLeaderboard">Loading leaderboard...</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="footer">
+            <div class="footer" data-translate="disclaimer">
                 Disclaimer: This webapp WILL NEVER ask, or store you secrets.
                 All processing is done in you browser.
             </div>

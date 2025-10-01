@@ -12,24 +12,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Tutorial</title>
-    <script type='text/javascript' src='//pl27598174.revenuecpmgate.com/76/43/d9/7643d9ee43308700ad6ec272ca4ffeba.js'></script>
+    <script src="translations.js"></script>
+    <script src="script.js"></script>
+    <!-- <script type='text/javascript' src='//pl27598174.revenuecpmgate.com/76/43/d9/7643d9ee43308700ad6ec272ca4ffeba.js'></script> -->
 </head>
 <body>
     <div class="container">
+        <div class="button-container">
+            <a href="index.html" class="back-btn" data-translate="backButton">⬅️ Back</a>
+            <div class="language-switcher">
+                <button onclick="toggleLanguage()" id="langToggle">🌐 EN</button>
+            </div>
+        </div>
         <div class="auth-section">
             <p style="margin-bottom: 20px; opacity: 0.9; font-size: 20px;">
-                <br>1. Buka <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: #1ed760;">Spotify Developer Dashboard</a>
+                <br>1. <span data-translate="open">Buka</span> <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: #1ed760;"><span data-translate="spotifyDevDashboard">Spotify Developer Dashboard</span></a>
             </p>
-                <picture id="img">
-                    <source srcset="i/dev.webp" type="image/webp">
-                    <source srcset="i/dev.jpg" type="image/jpeg">
-                    <img src="i/dev.jpg" alt="">
-                </picture>
-                <picture id="img">
-                    <source srcset="i/cilent.webp" type="image/webp">
-                    <source srcset="i/cilent.jpg" type="image/jpeg">
-                    <img src="i/cilent.jpg" alt="">
-                </picture>
+            <picture class="tutorial-img">
+                <source srcset="i/1open-dev.webp" type="image/webp">
+                <source srcset="i/1open-dev.png" type="image/jpeg">
+                <img src="i/1open-dev.png" alt="Open Developer Dashboard">
+            </picture>
+            <p style="margin-top: 20px; margin-bottom: 20px; opacity: 0.9; font-size: 20px;">
+                <br>2. <span data-translate="openDashboard">Buka Dashboard</span>
+            </p>
+            <picture class="tutorial-img">
+                <source srcset="i/2open-dash.webp" type="image/webp">
+                <source srcset="i/2open-dash.png" type="image/jpeg">
+                <img src="i/2open-dash.png" alt="Open Dashboard">
+            </picture>
+            <p style="margin-top: 20px; margin-bottom: 20px; opacity: 0.9; font-size: 20px;">
+                <br>3. <span data-translate="clickCreateApp">Klik Tombol "Create app"</span>
+            </p>
+            <picture class="tutorial-img">
+                <source srcset="i/3create-button.webp" type="image/webp">
+                <source srcset="i/3create-button.png" type="image/jpeg">
+                <img src="i/3create-button.png" alt="Create App Button">
+            </picture>
+            <p style="margin-top: 20px; margin-bottom: 20px; opacity: 0.9; font-size: 20px;">
+                <br>4. <span data-translate="createAppTutorialComplex">Buat Applikasi, arahkan Callback ke <b>https://spotify.zebua.site/</b> (ikuti gambar)</span>
+            </p>
+            <picture class="tutorial-img">
+                <source srcset="i/4createapp.webp" type="image/webp">
+                <source srcset="i/4createapp.png" type="image/jpeg">
+                <img src="i/4createapp.png" alt="Create App">
+            </picture>
+            <p style="margin-top: 20px; margin-bottom: 20px; opacity: 0.9; font-size: 20px;">
+                <br>5. <span data-translate="copyClientIdSecretComplex">Salin Client ID, <b>JANGAN PERNAH MEMBAGIKAN CILENT SECRET.</b></span>
+            </p>
+            <picture class="tutorial-img">
+                <source srcset="i/5copy-cilent.webp" type="image/webp">
+                <source srcset="i/5copy-cilent.png" type="image/jpeg">
+                <img src="i/5copy-cilent.png" alt="Copy Client ID and Secret">
+            </picture>
         </div>
     </div>
 </body>

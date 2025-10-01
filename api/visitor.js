@@ -2,9 +2,8 @@
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
@@ -13,10 +12,11 @@ export default async function handler(req, res) {
   }
 
   const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY;
-  const VISITOR_BIN_ID = process.env.VISITOR;
-  
+  const VISITOR_BIN_ID = process.env.VISITOR_BIN_ID;
+
   if (!JSONBIN_API_KEY || !VISITOR_BIN_ID) {
-    return res.status(500).json({ error: 'Visitor tracking configuration error' });
+    console.error('Server configuration error: JSONBIN_API_KEY or VISITOR_BIN_ID is not set.');
+    return res.status(500).json({ error: 'Visitor tracking configuration error. Check server logs.' });
   }
 
   try {
@@ -24,69 +24,59 @@ export default async function handler(req, res) {
       const visitorData = req.body;
       
       if (!visitorData) {
-        return res.status(400).json({ error: 'Visitor data required' });
+        return res.status(400).json({ error: 'Visitor data is required.' });
       }
 
-      // Get visitor's IP from headers (Vercel provides this)
-      const ip = req.headers['x-forwarded-for'] || 
-                 req.headers['x-real-ip'] || 
-                 req.connection.remoteAddress || 
-                 'unknown';
+      const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
 
-      // Get location data from IP using ipapi.co (free service)
       let locationData = {};
       try {
-        const locationResponse = await fetch(`https://ipapi.co/${ip.split(',')[0]}/json/`);
+        // Request additional fields
+        const fields = 'country,regionName,city,lat,lon,timezone,isp';
+        const locationResponse = await fetch(`http://ip-api.com/json/${ip}?fields=${fields}`);
         if (locationResponse.ok) {
           locationData = await locationResponse.json();
+        } else {
+          console.warn(`Failed to fetch location data for IP ${ip}: ${locationResponse.statusText}`);
         }
       } catch (error) {
-        console.log('Location lookup failed:', error);
+        console.warn(`Error fetching location data for IP ${ip}:`, error);
       }
 
-      // Prepare visitor entry
       const timestamp = new Date().toISOString();
       const visitorEntry = {
         timestamp,
-        ip: ip.split(',')[0], // Get first IP if multiple
+        ip,
         userAgent: visitorData.userAgent || 'unknown',
         referrer: visitorData.referrer || 'direct',
-        url: visitorData.url || 'unknown',
-        screenResolution: visitorData.screenResolution || 'unknown',
         language: visitorData.language || 'unknown',
-        timezone: visitorData.timezone || 'unknown',
-        country: locationData.country_name || 'unknown',
-        countryCode: locationData.country_code || 'unknown',
-        region: locationData.region || 'unknown',
+        timezone: locationData.timezone || visitorData.timezone || 'unknown',
+        country: locationData.country || 'unknown',
+        region: locationData.regionName || 'unknown',
         city: locationData.city || 'unknown',
-        latitude: locationData.latitude || null,
-        longitude: locationData.longitude || null,
-        isp: locationData.org || 'unknown',
-        detectionReason: visitorData.detectionReason || 'unknown'
+        isp: locationData.isp || 'unknown',
+        lat: locationData.lat || null,
+        lon: locationData.lon || null,
       };
 
       // Get existing data from JSONBin
       const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${VISITOR_BIN_ID}/latest`, {
-        headers: {
-          'X-Master-Key': JSONBIN_API_KEY,
-          'X-Bin-Meta': 'false'
-        }
+        headers: { 'X-Master-Key': JSONBIN_API_KEY },
       });
 
-      let visitorDatabase = { visitors: [] };
-      if (getResponse.ok) {
-        visitorDatabase = await getResponse.json();
-        if (!visitorDatabase.visitors) {
-          visitorDatabase.visitors = [];
-        }
+      if (!getResponse.ok) {
+        console.error(`Failed to fetch from JSONBin: ${getResponse.statusText}`)
+        throw new Error('Could not retrieve visitor database.');
       }
 
-      // Add new visitor entry
-      visitorDatabase.visitors.push(visitorEntry);
+      const visitorDatabase = await getResponse.json();
+      const visitors = visitorDatabase.record?.visitors || [];
 
-      // Keep only last 1000 entries to prevent bin from getting too large
-      if (visitorDatabase.visitors.length > 1000) {
-        visitorDatabase.visitors = visitorDatabase.visitors.slice(-1000);
+      visitors.push(visitorEntry);
+
+      // Keep only the last 1000 entries
+      if (visitors.length > 1000) {
+        visitors.splice(0, visitors.length - 1000);
       }
 
       // Update JSONBin
@@ -94,23 +84,38 @@ export default async function handler(req, res) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Master-Key': JSONBIN_API_KEY
+          'X-Master-Key': JSONBIN_API_KEY,
         },
-        body: JSON.stringify(visitorDatabase)
+        body: JSON.stringify({ visitors }),
       });
 
       if (!updateResponse.ok) {
-        throw new Error('Failed to update visitor database');
+        console.error(`Failed to update JSONBin: ${updateResponse.statusText}`)
+        throw new Error('Failed to update visitor database.');
       }
 
-      res.status(200).json({ success: true, message: 'Visitor data saved successfully' });
-      
+      res.status(200).json({ success: true, message: 'Visitor data saved.' });
+
+    } else if (req.method === 'GET') {
+      // Add a GET method to retrieve the log for debugging
+      const getResponse = await fetch(`https://api.jsonbin.io/v3/b/${VISITOR_BIN_ID}/latest`, {
+        headers: { 'X-Master-Key': JSONBIN_API_KEY },
+      });
+
+      if (!getResponse.ok) {
+        throw new Error('Could not retrieve visitor log.');
+      }
+
+      const data = await getResponse.json();
+      res.status(200).json(data.record);
+
     } else {
-      res.status(405).json({ error: 'Method not allowed' });
+      res.setHeader('Allow', ['POST', 'GET']);
+      res.status(405).end(`Method ${req.method} Not Allowed`);
     }
     
   } catch (error) {
     console.error('Visitor API Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'An internal server error occurred.' });
   }
 }

@@ -12,11 +12,28 @@ body {
     animation: gradientShift 12s ease infinite;
 }
 
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 .language-switcher {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
+    position: relative;
 }
 
 .language-switcher button {
@@ -43,12 +60,18 @@ body {
     margin: 0 auto;
     padding: 20px;
 }
-#img {
-    display: block !important; 
-    max-width: 100% !important;
-    height: auto !important;
-    object-fit: cover !important;
-    border-radius: 8px !important;
+.tutorial-img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.tutorial-img img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
 }
 .kotak {
     background: rgba(255, 255, 255, 0.05);

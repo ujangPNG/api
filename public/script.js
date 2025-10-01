@@ -6,71 +6,28 @@ let currentTimeRange = "short_term";
 let userProfile = null;
 let currentLeaderboardData = null;
 
-// Auto visitor tracking for USA users
-function trackVisitor() {
-    // Check if gtag is available and get country info
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'page_view', {
-            custom_map: { 'custom_parameter_1': 'country' },
-            callback: function() {
-                // Use gtag to get country, but also use backup method
-                setTimeout(() => {
-                    checkAndSaveVisitor();
-                }, 1000);
-            }
-        });
-    } else {
-        // Fallback if gtag not available
-        checkAndSaveVisitor();
-    }
-}
-
-async function checkAndSaveVisitor() {
+// Visitor Tracking
+async function trackVisitor() {
     try {
-        // Collect visitor data
         const visitorData = {
             userAgent: navigator.userAgent,
             referrer: document.referrer,
             url: window.location.href,
-            screenResolution: `${screen.width}x${screen.height}`,
-            language: navigator.language || navigator.userLanguage,
+            language: navigator.language,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            detectionReason: 'all_visitors'
         };
 
-        // Check if this is likely a bot
-        const userAgent = navigator.userAgent.toLowerCase();
-        if (userAgent.includes('bot') || userAgent.includes('crawler') || userAgent.includes('spider')) {
-            visitorData.detectionReason = 'bot_detected';
-        }
-
-        // Try to get country info from gtag dataLayer if available
-        if (window.dataLayer) {
-            for (let item of window.dataLayer) {
-                if (item.country) {
-                    visitorData.gtagCountry = item.country;
-                    break;
-                }
-            }
-        }
-
-        // Send visitor data to API (for all visitors)
         await fetch('/api/visitor', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(visitorData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(visitorData),
         });
     } catch (error) {
-        console.log('Visitor tracking error:', error);
+        console.warn('Visitor tracking failed:', error);
     }
 }
 
-// Initialize visitor tracking when page loads
-document.addEventListener('DOMContentLoaded', trackVisitor);
-
-// Helper function for API calls - now uses relative path for your domain
+// Helper function for API calls
 async function apiCall(endpoint, options = {}) {
     return fetch(`/api${endpoint}`, options);
 }
@@ -83,101 +40,32 @@ function toggleLanguage() {
 }
 
 function updatePageContent() {
-    // Update all text content based on current language
-    document.querySelector("#authSection h2").textContent =
-        translations[currentLanguage].setupTitle;
-    document.querySelector("#authSection p").innerHTML = `
-        ${translations[currentLanguage].setupInstructions}
-        <br>${translations[currentLanguage].createApp} <a href="https://developer.spotify.com/dashboard" target="_blank" style="color: #1ed760;">Spotify Dashboard</a>
-        <br>${translations[currentLanguage].setRedirect} <strong>${window.location.origin}/</strong>
-        <br>${translations[currentLanguage].copyClientId}
-        <br>${translations[currentLanguage].emailOption}
-    `;
-
-    document.querySelector('label[for="clientId"]').textContent =
-        translations[currentLanguage].clientIdLabel;
-    document.querySelector('label[for="redirectUri"]').textContent =
-        translations[currentLanguage].redirectUriLabel;
-    document.querySelector("#authSection button").textContent =
-        translations[currentLanguage].loginButton;
-
-    // Stats section
-    document.querySelector("#statsSection h2").textContent =
-        translations[currentLanguage].statsTitle;
-    document.querySelectorAll(".stat-label").forEach((label, index) => {
-        const labels = [
-            translations[currentLanguage].totalTracks,
-            translations[currentLanguage].totalArtists,
-            translations[currentLanguage].dataRequests,
-            translations[currentLanguage].avgTracksPopularity,
-            translations[currentLanguage].avgArtistPopularity,
-        ];
-        label.textContent = labels[index];
-    });
-
-    // Settings section
-    document.querySelector(".settings-section h3").textContent =
-        translations[currentLanguage].settingsTitle;
-    document.querySelectorAll(".time-desc").forEach((desc, index) => {
-        const timeRanges = [
-            translations[currentLanguage].shortTerm,
-            translations[currentLanguage].mediumTerm,
-            translations[currentLanguage].longTerm,
-        ];
-        desc.textContent = timeRanges[index];
-    });
-
-    // Buttons
-    document.querySelector(".button-group button:first-child").textContent =
-        translations[currentLanguage].fetchDataButton;
-    document.querySelector(".button-group button:last-child").textContent =
-        translations[currentLanguage].logoutButton;
-
-    // Loading section
-    const loadingText = document.querySelector("#loadingSection p");
-    if (loadingText) {
-        const requests =
-            loadingText.querySelector("#fetchProgress").textContent;
-        loadingText.innerHTML = `${translations[currentLanguage].loading} <span id="fetchProgress">${requests}</span> ${translations[currentLanguage].requests}`;
-    }
-
-    // Results section
-    const tracksTitle = document.querySelector("#tracksSection h3");
-    const artistsTitle = document.querySelector("#artistsSection h3");
-    if (tracksTitle)
-        tracksTitle.textContent = translations[currentLanguage].topTracks;
-    if (artistsTitle)
-        artistsTitle.textContent = translations[currentLanguage].topArtists;
-
-    // Update counts
-    const tracksCount = document.querySelector("#tracksCount");
-    const artistsCount = document.querySelector("#artistsCount");
-    if (tracksCount) {
-        const count = tracksCount.textContent.split(" ")[0];
-        tracksCount.textContent = `${count} ${translations[currentLanguage].tracksCount}`;
-    }
-    if (artistsCount) {
-        const count = artistsCount.textContent.split(" ")[0];
-        artistsCount.textContent = `${count} ${translations[currentLanguage].artistsCount}`;
-    }
-
-    // Update leaderboard content if visible
-    const leaderboardPromptCard = document.querySelector(".prompt-card");
-    if (leaderboardPromptCard) {
-        const promptText = leaderboardPromptCard.querySelector("p");
-        if (promptText)
-            promptText.textContent =
-                translations[currentLanguage].leaderboardDesc;
-
-        const buttons = leaderboardPromptCard.querySelectorAll(
-            ".prompt-buttons .btn",
-        );
-        if (buttons.length >= 2) {
-            buttons[0].textContent = translations[currentLanguage].showButton;
-            buttons[1].textContent = translations[currentLanguage].hideButton;
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[currentLanguage] && translations[currentLanguage][key]) {
+            if (key.endsWith('Complex')) {
+                element.innerHTML = translations[currentLanguage][key];
+            } else {
+                element.textContent = translations[currentLanguage][key];
+            }
         }
-    }
+    });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    trackVisitor(); // Track visitor on page load
+
+    const savedClientId = localStorage.getItem('spotify_client_id');
+    const savedRedirectUri = localStorage.getItem('spotify_redirect_uri');
+    if (savedClientId) {
+        document.getElementById('clientId').value = savedClientId;
+    }
+    if (savedRedirectUri) {
+        document.getElementById('redirectUri').value = savedRedirectUri;
+    }
+
+    updatePageContent();
+});
 
 // PKCE helper functions
 function generateRandomString(length) {
